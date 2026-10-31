@@ -1,69 +1,78 @@
 # vibe-buff 🔔
 
-**Оверлей-таймер, который не даёт забыть обновить скилл в игре, пока ты вайбкодишь.**
+**English** | [Русский](README.ru.md)
 
-Сценарий простой: в одном окне идёт игра, где надо стоять и раз в N секунд жать
-одну кнопку, а ты в это время пишешь код, читаешь доки или болтаешь с ИИ.
-Через пару минут ты, конечно, забываешь про игру, а бафф уже слетел.
+**An overlay timer that reminds you to recast your in-game skill while you're vibe coding.**
 
-vibe-buff следит за кнопкой скилла. Как только ты её нажал, на маленькой плашке
-поверх всех окон начинается обратный отсчёт. Когда время почти вышло, плашка
-становится оранжевой, когда вышло — мигает **«ОБНОВИ!»** и тихо звенит
-колокольчиком, пока ты не нажмёшь кнопку снова.
+You have a game running in one window where you need to stand still and press
+one button every N seconds. Meanwhile you're writing code, reading docs, or
+chatting with an AI. A couple of minutes later you've forgotten about the game,
+and your buff is gone.
 
-## Пример: Warframe, выживание с Корой
+vibe-buff watches your skill key. When you press it, a countdown starts on a
+small always-on-top panel. When time is almost up, the panel turns orange. When
+time runs out, it flashes **«ОБНОВИ!»** ("Recast!") and plays a soft bell chime
+until you press the key again.
 
-Стоишь на «Выживании», держишь врагов в Strangledome (купол Коры, по умолчанию
-на `4`) и параллельно вайбкодишь:
+## Example: Warframe, Survival with Khora
 
-1. Запусти `skill_timer.pyw`.
-2. ПКМ по плашке → «Скилл [R]» → «Настроить…».
-3. Назови таймер «Купол», нажми «Кнопка» и затем `4`, укажи длительность купола
-   из своего билда (посмотри в арсенале) и предупреждение секунд за 5.
-4. Кастуешь купол — таймер стартует сам. Слышишь «динь-дон» — пора вернуться в
-   игру и обновить.
+You're holding a Survival mission with Strangledome (Khora's dome, bound to `4`
+by default) while vibe coding in another window:
 
-Так же он подойдёт для любой игры, где есть баффы, щиты, ауры, зелья или тотемы
-с откатом.
+1. Run `skill_timer.pyw`.
+2. Right-click the panel → «Скилл [R]» → «Настроить…» (Configure).
+3. Name the timer (e.g. "Dome"), click «Кнопка» (Key) and press `4`. Set the
+   dome duration from your build (check it in the Arsenal) and a warning about
+   5 seconds before the end.
+4. Cast the dome and the timer starts on its own. When you hear the
+   "ding-dong", go back to the game and recast it.
 
-## Возможности
+It works for any game with buffs, shields, auras, potions, or totems on a
+timer.
 
-- Окно поверх всех окон, полупрозрачное, перетаскивается мышью.
-- Глобально ловит нажатия: клавиатура и боковые кнопки мыши (Mouse4/Mouse5),
-  даже когда фокус в игре или в редакторе.
-- Можно завести несколько таймеров, у каждого своя кнопка.
-- Режим «закрепить» (**Ctrl+Alt+L**): клики проходят сквозь плашку.
-- Мягкий колокольчик вместо писка, громкость настраивается. Можно подставить
-  свой `.wav` (поле `sound_file` в конфиге).
-- Настройки и позиция сохраняются в `skill_timer_config.json`.
+## Features
 
-## Запуск
+- Semi-transparent, always-on-top panel you can drag with the mouse.
+- Catches key presses globally, keyboard and side mouse buttons
+  (Mouse4/Mouse5), even while the game or your editor has focus.
+- Multiple timers, each with its own key.
+- Lock mode (**Ctrl+Alt+L**): clicks pass through the panel.
+- A soft bell chime instead of a harsh beep, with adjustable volume. You can
+  use your own `.wav` (the `sound_file` field in the config).
+- Settings and panel position are saved to `skill_timer_config.json`.
 
-Нужен Windows и Python 3.8+ (tkinter входит в стандартную поставку).
-Сторонних зависимостей нет.
+> The interface is currently in Russian.
+
+## Running
+
+You need Windows and Python 3.8+ (tkinter ships with the standard installer).
+There are no third-party dependencies.
 
 ```bash
 pythonw skill_timer.pyw
 ```
 
-Или просто двойной клик по `skill_timer.pyw`.
+Or just double-click `skill_timer.pyw`.
 
-## Управление
+## Controls
 
-| Действие | Что делает |
+| Action | What it does |
 |---|---|
-| Назначенная кнопка | (пере)запускает таймер |
-| ЛКМ + тянуть | двигает плашку |
-| ПКМ | меню: добавить / настроить / удалить таймер, общие настройки, выход |
-| × у таймера | остановить таймер и звон |
-| ✕ в углу | закрыть оверлей |
-| Ctrl+Alt+L | закрепить / открепить (клики сквозь плашку) |
-| Ctrl+Alt+X | остановить все таймеры (работает и в закреплённом режиме) |
+| Bound key | (re)starts the timer |
+| Left-click + drag | moves the panel |
+| Right-click | menu: add / configure / remove a timer, general settings, exit |
+| × next to a timer | stops the timer and the chime |
+| ✕ in the corner | closes the overlay |
+| Ctrl+Alt+L | lock / unlock (click-through) |
+| Ctrl+Alt+X | stops all timers (works in lock mode too) |
 
-## Важно
+## Notes
 
-- Игра должна работать в режиме **«оконный без рамки» (borderless)**. Поверх
-  эксклюзивного полноэкранного режима Windows окна не рисует.
-- Программа только *читает*, нажата ли кнопка (`GetAsyncKeyState`). Она ничего
-  не нажимает за тебя, не внедряется в игру и не читает её память.
-  Это напоминалка, а не макрос.
+- Run the game in **borderless windowed** mode. Windows doesn't draw other
+  windows over exclusive fullscreen.
+- The program only *reads* whether a key is pressed (`GetAsyncKeyState`). It
+  never presses anything for you, doesn't inject into the game, and doesn't read
+  its memory. It's a reminder, not a macro.
+- In the config, `key` is a Windows virtual-key code, not the character:
+  the `4` key is `52`, and `4` itself is the middle mouse button. The easiest
+  way to bind a key is through the settings dialog.
