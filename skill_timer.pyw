@@ -9,7 +9,10 @@
 Управление:
   ЛКМ + тянуть      — переместить оверлей
   ПКМ               — меню (добавить/настроить/удалить таймер, закрепить, выход)
+  ×  у таймера      — остановить таймер (и звон)
+  ✕  в углу         — закрыть оверлей
   Ctrl+Alt+L        — закрепить/открепить (в закреплённом режиме клики проходят сквозь оверлей)
+  Ctrl+Alt+X        — остановить все таймеры
 
 Без внешних зависимостей: только стандартный Python 3.
 """
@@ -57,7 +60,7 @@ WS_EX_TOOLWINDOW = 0x00000080
 HWND_TOPMOST = -1
 SWP_NOMOVE, SWP_NOSIZE, SWP_NOACTIVATE = 0x2, 0x1, 0x10
 
-VK_CONTROL, VK_MENU, VK_L = 0x11, 0x12, 0x4C
+VK_CONTROL, VK_MENU, VK_L, VK_X = 0x11, 0x12, 0x4C, 0x58
 
 VK_NAMES = {
     0x01: "ЛКМ", 0x02: "ПКМ", 0x04: "СКМ", 0x05: "Mouse4", 0x06: "Mouse5",
@@ -211,7 +214,23 @@ class Overlay:
             name.grid(row=i, column=0, sticky="w")
             key.grid(row=i, column=1, padx=(6, 6))
             val.grid(row=i, column=2, sticky="e")
+            stop = self.icon_button(small, "×", "Остановить таймер", lambda t=t: self.stop_timer(t))
+            stop.grid(row=i, column=3, padx=(8, 0))
             self.rows.append(val)
+        close = self.icon_button(small, "✕", "Закрыть", self.quit)
+        close.grid(row=0, column=4, sticky="ne", padx=(10, 0))
+
+    def icon_button(self, font, text, tip, command):
+        lbl = tk.Label(self.frame, text=text, fg=self.COL_IDLE, bg=self.BG, font=font, cursor="hand2")
+        lbl.bind("<Enter>", lambda e: lbl.config(fg="#ffffff"))
+        lbl.bind("<Leave>", lambda e: lbl.config(fg=self.COL_IDLE))
+        lbl.bind("<ButtonRelease-1>", lambda e: command())
+        lbl.is_button = True
+        return lbl
+
+    def stop_timer(self, t):
+        t.deadline = None
+        winsound.PlaySound(None, 0)  # оборвать звук, если звенит
 
     def tick(self):
         self.blink = not self.blink
@@ -251,7 +270,7 @@ class Overlay:
                     break
                 self.prev_down[vk] = down
         else:
-            watch = {t.data["key"] for t in self.timers} | {VK_L}
+            watch = {t.data["key"] for t in self.timers} | {VK_L, VK_X}
             for vk in watch:
                 down = is_down(vk)
                 if down and not self.prev_down.get(vk):
@@ -262,6 +281,10 @@ class Overlay:
     def on_key(self, vk):
         if vk == VK_L and is_down(VK_CONTROL) and is_down(VK_MENU):
             self.toggle_lock()
+            return
+        if vk == VK_X and is_down(VK_CONTROL) and is_down(VK_MENU):
+            for t in self.timers:
+                self.stop_timer(t)
             return
         for t in self.timers:
             if t.data["key"] == vk:
@@ -288,7 +311,7 @@ class Overlay:
 
     # ---------- Перетаскивание ----------
     def drag_start(self, e):
-        if e.widget.winfo_toplevel() is not self.root:
+        if e.widget.winfo_toplevel() is not self.root or getattr(e.widget, "is_button", False):
             return
         self._drag = (e.x_root - self.root.winfo_x(), e.y_root - self.root.winfo_y())
 
@@ -313,7 +336,7 @@ class Overlay:
         for i, t in enumerate(self.timers):
             sub = tk.Menu(m, tearoff=0)
             sub.add_command(label="Настроить…", command=lambda i=i: self.edit_timer(i))
-            sub.add_command(label="Сбросить", command=lambda t=t: setattr(t, "deadline", None))
+            sub.add_command(label="Остановить", command=lambda t=t: self.stop_timer(t))
             sub.add_command(label="Удалить", command=lambda i=i: self.remove_timer(i))
             m.add_cascade(label=f"{t.data['name']} [{key_name(t.data['key'])}]", menu=sub)
         m.add_separator()
